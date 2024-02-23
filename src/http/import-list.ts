@@ -1,9 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import fs from 'node:fs'
-import http from 'node:http'
+import slugify from 'slugify'
 import { z } from 'zod'
-
-import { redis } from '@/lib/redis'
 
 export async function importList(app: FastifyInstance) {
   app.post('/imports', async (request, reply) => {
@@ -13,10 +11,12 @@ export async function importList(app: FastifyInstance) {
 
     const { url } = bodySchema.parse(request.body)
 
-    // const response = await fetch(url)
-    // const result = await response.text()
+    if (fs.existsSync('list.m3u')) {
+      return reply.status(200).send()
+    }
 
-    const result = fs.readFileSync('file.m3u').toString()
+    const response = await fetch(url)
+    const result = await response.text()
 
     const data = result
       .slice(result.indexOf('#EXTINF:-1'))
@@ -28,25 +28,32 @@ export async function importList(app: FastifyInstance) {
         const infoArray = inlineInfo.split('"').map((item) => item.trim())
 
         const name = infoArray[1]
+        const slug = slugify(name, {
+          lower: true,
+        })
+        const isSerie = /S\d*E\d*/g.test(infoArray[1])
         const image = infoArray[3]
         const category =
           infoArray[5]
             .split('|')
             .map((tag) => tag.trim())[0]
             .toLowerCase()
-            .replace(':', '')
-            .replace(/\s/g, '-') ?? ''
+            .replace(/:/g, '')
+            .replace(/\s/g, '-')
+            .replace(/./g, '-') ?? ''
 
         return {
           name,
+          slug,
           image,
           category,
           fileUrl,
+          isSerie,
         }
       })
 
-    return {
-      data,
-    }
+    fs.writeFileSync('list.m3u', JSON.stringify(data))
+
+    return reply.status(204).send()
   })
 }

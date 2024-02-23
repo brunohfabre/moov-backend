@@ -1,9 +1,12 @@
 import fastify from 'fastify'
 
+import fastifyCors from '@fastify/cors'
+
 import { appRoutes } from './routes'
 
 const app = fastify()
 
+app.register(fastifyCors)
 app.register(appRoutes)
 
 app
