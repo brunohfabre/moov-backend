@@ -10,5 +10,5 @@ app.register(fastifyCors)
 app.register(appRoutes)
 
 app
-  .listen({ host: '0.0.0.0', port: 3333 })
-  .then(() => console.log('Server running on port 3333.'))
+  .listen({ host: '0.0.0.0', port: 3434 })
+  .then(() => console.log('Server running on port 3434.'))
