@@ -1,3 +1,4 @@
 node_modules
 .env
 list.m3u
+dist
